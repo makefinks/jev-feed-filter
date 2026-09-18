@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feed Filter Controls</title>
+<link rel="stylesheet" href="controls.css">
+<script src="controls.js" defer></script>
+</head>
+<body>
+<main>
+<div id="warning" class="banner banner-warn" role="alert" hidden><span id="warningText"></span></div>
+<p id="error" class="banner banner-err" role="alert" hidden></p>
+<section id="mainView" aria-label="Filter">
+<header>
+<h1>Feed Filter</h1>
+<p id="state" role="status"><button id="statePill" class="slider" type="button" aria-label="Filtering status" aria-pressed="true"><span class="slider-knob" aria-hidden="true"><svg class="icon-paused" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1"/></svg><svg class="icon-active" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg></span><span id="stateLabel" class="slider-label">Active</span></button><span id="stateReason" class="visually-hidden"></span></p>
+<div class="settings-control">
+<button id="openSettings" type="button" class="icon-button" aria-label="Settings" aria-controls="settingsView" title="Settings">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+</button>
+<span id="setupHint" class="setup-hint" role="tooltip" hidden></span>
+</div>
+</header>
+<div class="field" id="guidanceField">
+<div class="label-row">
+<label for="guidance">Guidance</label>
+<span id="guidanceStatus" class="guidance-status"></span>
+</div>
+<textarea id="guidance" rows="6" placeholder="Describe the posts you want to see or avoid, e.g. show only posts about hiking, or hide posts about politics" disabled></textarea>
+</div>
+<div class="field">
+<div class="label-row">
+<label for="threshold">Filter Threshold</label>
+<span class="help-wrap">
+<button id="thresholdHelp" type="button" class="help-button" aria-label="About the filter threshold" aria-describedby="thresholdHint">?</button>
+<span id="thresholdHint" class="help-hint" role="tooltip">Posts rated above this % get hidden. Lower % hides more posts; higher % hides fewer.</span>
+</span>
+</div>
+<div class="row">
+<input id="threshold" type="range" min="0" max="100" step="1" value="70" disabled>
+<output id="thresholdValue" for="threshold">70%</output>
+</div>
+</div>
+</section>
+<section id="settingsView" aria-label="Settings" hidden>
+<button id="backSettings" type="button" class="back-button" aria-controls="mainView">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+Back
+</button>
+<header>
+<h1>Settings</h1>
+</header>
+<div class="field" id="apiKeyField">
+<div class="label-row">
+<label for="apiKey"><span id="apiKeyProvider">TypeSafe</span> API key</label>
+<details id="providerMenu" class="provider-menu">
+<summary>choose provider</summary>
+<div role="group" aria-label="Provider">
+<button type="button" data-provider="typesafe">TypeSafe</button>
+<button type="button" data-provider="openrouter">OpenRouter</button>
+</div>
+</details>
+</div>
+<input id="apiKey" name="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="Enter key to set or replace">
+<div class="key-actions">
+<button id="saveKey" type="button" class="primary">Save key</button>
+<button id="removeKey" type="button" class="danger-ghost">Remove key</button>
+</div>
+</div>
+<div class="field">
+<label for="hideMode">Hide Filtered Posts</label>
+<select id="hideMode" disabled>
+<option value="blur">Blur</option>
+<option value="collapse">Collapse</option>
+</select>
+</div>
+<label class="debug-setting" for="debug">
+<span><span class="debug-title">Debug Panel</span><span class="debug-description" id="debugDescription">Live metrics.</span></span>
+<input id="debug" type="checkbox" role="switch" aria-describedby="debugDescription">
+</label>
+</section>
+</main>
+</body>
+</html>

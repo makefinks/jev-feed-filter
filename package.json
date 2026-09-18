@@ -1,0 +1,19 @@
+{
+  "name": "jev-feed-filter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "package": "npm run build && cd dist && zip -r ../jev-feed-filter.zip .",
+    "release": "node scripts/release.mjs",
+    "typecheck": "tsc --noEmit",
+    "evaluate": "node --experimental-strip-types scripts/evaluate.ts"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.12",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.0"
+  }
+}
