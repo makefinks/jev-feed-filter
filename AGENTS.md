@@ -18,7 +18,7 @@ Data flows from controls through `chrome.runtime` messages to the service worker
 
 - `src/`: TypeScript extension logic and shared contracts.
 - `public/`: Manifest, controls markup/styles, and feed styles copied into the build.
-- `scripts/`: Build pipeline and the opt-in live TypeSafe evaluation script.
+- `scripts/`: Build pipeline.
 - `docs/`: Agent-facing issue-tracker and domain-documentation instructions.
 - `.scratch/`: Local issue/spec files when feature work is tracked there.
 - `dist/`: Generated unpacked-extension output; ignored by Git.
@@ -28,7 +28,6 @@ Data flows from controls through `chrome.runtime` messages to the service worker
 - `npm install`: install dependencies from `package-lock.json`.
 - `npm run build`: bundle `src/background.ts`, `src/feed.ts`, and `src/controls.ts` with esbuild and copy public assets into `dist/`.
 - `npm run typecheck`: run strict TypeScript checking without emitting files.
-- `npm run evaluate`: run the synthetic live TypeSafe evaluation script. It requires explicit `TYPESAFE_EVALUATION_CONSENT=yes` and a local `TYPESAFE_API_KEY`; it sends synthetic posts and Guidance to the provider.
 - Test, lint, and development-server commands are not currently configured. Load `dist/` as an unpacked extension in Chrome for manual development when explicitly requested.
 
 ## Code Conventions & Common Patterns
@@ -51,18 +50,17 @@ Data flows from controls through `chrome.runtime` messages to the service worker
 - `src/contracts.ts`: shared message and settings contracts plus provider constants.
 - `public/controls.html`, `public/controls.css`, `public/feed.css`: extension UI and feed presentation assets.
 - `scripts/build.mjs`: reproducible bundle-and-copy build.
-- `scripts/evaluate.ts`: explicitly opt-in synthetic provider evaluation; never commit credentials.
 - `CONTEXT.md`: domain vocabulary and filtering invariants.
 
 ## Runtime/Tooling Preferences
 
 - Use Node.js and npm for repository commands; the lockfile is authoritative. `package.json` scripts invoke Node directly.
 - Target Chrome 120 or newer, matching `public/manifest.json` and the esbuild target.
-- Keep credentials in local environment variables only for explicitly approved evaluation. Never place API keys in source, requests stored in fixtures, or committed files.
+- Never place API keys in source, fixtures, or committed files.
 - Prefer the existing TypeScript, esbuild, Chrome extension APIs, and DOM primitives over adding framework dependencies.
 
 ## Testing & QA
 
 Automated frontend tests are deferred project work. Do not add test files, test dependencies, or test commands unless the user explicitly reopens testing.
 
-Browser or UI verification is also deferred by default. Perform it only when the user explicitly requests it. For non-browser changes, `npm run typecheck` and `npm run build` are the available baseline checks. When live provider evaluation is explicitly approved, use the consent guard and synthetic inputs in `scripts/evaluate.ts`; its output is a contract check, not an accuracy benchmark.
+Browser or UI verification is also deferred by default. Perform it only when the user explicitly requests it. For non-browser changes, `npm run typecheck` and `npm run build` are the available baseline checks.

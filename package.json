@@ -7,8 +7,7 @@
     "build": "node scripts/build.mjs",
     "package": "npm run build && cd dist && zip -r ../jev-feed-filter.zip .",
     "release": "node scripts/release.mjs",
-    "typecheck": "tsc --noEmit",
-    "evaluate": "node --experimental-strip-types scripts/evaluate.ts"
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.12",

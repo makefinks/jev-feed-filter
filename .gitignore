@@ -2,3 +2,5 @@ node_modules/
 dist/
 .env*
 *.zip
+.DS_Store
+.scratch/
