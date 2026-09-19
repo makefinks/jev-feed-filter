@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Jev Feed Filter",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Smart, dynamic AI filtering for X and YouTube feeds.",
   "minimum_chrome_version": "120",
   "permissions": [
