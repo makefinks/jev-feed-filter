@@ -47,14 +47,29 @@ function extract(article: HTMLElement) {
   if (!id) return null;
   const text: string[] = [];
   const quotedText: string[] = [];
+  const hidden: HTMLElement[] = [];
   for (const node of article.querySelectorAll<HTMLElement>('[data-testid="tweetText"]')) {
-    if (!node.checkVisibility({ checkVisibilityCSS: true, checkOpacity: true })) continue;
+    if (!node.checkVisibility({ checkVisibilityCSS: true, checkOpacity: true })) { hidden.push(node); continue; }
     const rendered = node.innerText.trim();
     if (!rendered) continue;
     // X renders quoted cards as nested links; preserve that relationship in state.
     const quote = node.closest('[role="link"]');
     if (quote && quote !== article && article.contains(quote)) quotedText.push(rendered);
     else text.push(rendered);
+  }
+  // Ad slots park under a display:none wrapper until X reveals them, so visibility checks
+  // can drop real text and leave the post permanently unassessed. Fall back to
+  // layout-independent text, deduped, only when nothing visible was found.
+  if (!text.length && !quotedText.length) {
+    const seen = new Set<string>();
+    for (const node of hidden) {
+      const rendered = (node.textContent ?? '').trim();
+      if (!rendered || seen.has(rendered)) continue;
+      seen.add(rendered);
+      const quote = node.closest('[role="link"]');
+      if (quote && quote !== article && article.contains(quote)) quotedText.push(rendered);
+      else text.push(rendered);
+    }
   }
   const evidence = { text: text.join('\n'), quotedText };
   return { id: `x:${id}`, evidence };
