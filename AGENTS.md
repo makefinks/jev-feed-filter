@@ -19,8 +19,6 @@ Data flows from controls through `chrome.runtime` messages to the service worker
 - `src/`: TypeScript extension logic and shared contracts.
 - `public/`: Manifest, controls markup/styles, and feed styles copied into the build.
 - `scripts/`: Build pipeline.
-- `docs/`: Agent-facing issue-tracker and domain-documentation instructions.
-- `.scratch/`: Local issue/spec files when feature work is tracked there.
 - `dist/`: Generated unpacked-extension output; ignored by Git.
 
 ## Development Commands

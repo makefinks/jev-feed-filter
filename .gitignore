@@ -4,3 +4,4 @@ dist/
 *.zip
 .DS_Store
 .scratch/
+docs/agents/
