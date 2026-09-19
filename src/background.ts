@@ -40,7 +40,7 @@ const GUIDANCE_EXPANSIONS: Array<{ pattern: RegExp; replacement: string }> = [
 function expandGuidance(guidance: string): string {
   return GUIDANCE_EXPANSIONS.reduce((next, { pattern, replacement }) => next.replace(pattern, replacement), guidance);
 }
-const MAX_CONCURRENT = 8;
+const MAX_CONCURRENT = 16;
 const CACHE_LIMIT = 300;
 const MAX_DECISIONS = 50;
 const MAX_TEXT_LENGTH = 20000;
@@ -409,43 +409,61 @@ async function performAssessment(
         if (controller.signal.aborted) debug.timeouts += 1;
       }
     };
-    let response: Response;
-    try {
-      response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model,
-          state: {
-            guidance,
-            post: { text: evidence.text, quotedText: evidence.quotedText, author: evidence.author ?? '' },
+    let response: Response | null = null;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
           },
-          questions: {
-            filter: { type: QUESTION.type, instructions: QUESTION.instructions, criteria: QUESTION.criteria },
-          },
-        }),
-        signal: controller.signal,
-        redirect: 'error',
-        credentials: 'omit',
-      });
-    } catch {
-      clearTimeout(timeoutId);
-      if (obsolete()) return { unavailable: true };
-      record(false);
-      if (controller.signal.aborted) {
-        await setTransientWarning(
-          `${name} request timed out after 12 seconds. Posts stay visible; check the provider and try again.`,
-        );
-      } else {
-        await setTransientWarning(
-          `Could not reach ${name} (network error). Posts stay visible; retry shortly.`,
-        );
+          body: JSON.stringify({
+            model,
+            state: {
+              guidance,
+              post: { text: evidence.text, quotedText: evidence.quotedText, author: evidence.author ?? '' },
+            },
+            questions: {
+              filter: { type: QUESTION.type, instructions: QUESTION.instructions, criteria: QUESTION.criteria },
+            },
+          }),
+          signal: controller.signal,
+          redirect: 'error',
+          credentials: 'omit',
+        });
+      } catch {
+        clearTimeout(timeoutId);
+        if (obsolete()) return { unavailable: true };
+        record(false);
+        if (controller.signal.aborted) {
+          await setTransientWarning(
+            `${name} request timed out after 12 seconds. Posts stay visible; check the provider and try again.`,
+          );
+        } else {
+          await setTransientWarning(
+            `Could not reach ${name} (network error). Posts stay visible; retry shortly.`,
+          );
+        }
+        return { unavailable: true };
       }
-      return { unavailable: true };
+      // TypeSafe prescribes backoff-and-retry on 429/529; failing fast just flashes unfiltered posts.
+      if ((response.status === 429 || response.status === 529) && attempt < 3 && !obsolete() && !controller.signal.aborted) {
+        const retryAfterMs = Number(response.headers.get('retry-after-ms'));
+        const retryAfter = Number(response.headers.get('retry-after'));
+        const serverDelay = Number.isFinite(retryAfterMs) && retryAfterMs > 0 && retryAfterMs <= 10000
+          ? retryAfterMs
+          : Number.isFinite(retryAfter) && retryAfter > 0 && retryAfter <= 10
+            ? retryAfter * 1000
+            : 0;
+        const delay = serverDelay > 0 ? serverDelay : Math.min(500 * 2 ** attempt, 2000);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        if (obsolete() || controller.signal.aborted) return { unavailable: true };
+        continue;
+      }
+      break;
     }
+    if (!response) return { unavailable: true };
     // Headers arrived; the body read below stays under the same timeout.
     let payload: unknown = null;
     if (response.ok) {
